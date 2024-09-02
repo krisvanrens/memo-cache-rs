@@ -2,6 +2,12 @@
 name = "memo-cache"
 version = "0.5.0"
 edition = "2021"
+authors = ["Kris van Rens <krisvanrens@gmail.com>"]
+categories = ["caching"]
+description = "A small, fixed-size cache with retention management"
+repository = "https://github.com/krisvanrens/memo-cache-rs"
+keywords = ["caching", "memoization"]
+license = "Apache-2.0 OR MIT"
 
 [dependencies]
 
