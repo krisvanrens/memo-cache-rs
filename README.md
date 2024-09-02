@@ -63,6 +63,12 @@ That's why this cache will only be beneficial performance-wise when used with a 
 
 Run the included benchmarks using `criterion`: `cargo bench`
 
+## TODO
+
+- Extend documentation (on `[no_std`, example, etc.).
+- Add `get_or_else` method that can nicely deal with references to cached items instead of being forced to use the cache in an imperative fashion.
+- Improve benchmarks to be more useful and indicative.
+
 ## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
