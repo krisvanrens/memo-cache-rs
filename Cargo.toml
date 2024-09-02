@@ -1,0 +1,21 @@
+[package]
+name = "memo-cache"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "0.5.1"
+rand = "0.8.5"
+rand_distr = "0.4.3"
+
+[features]
+default = ["inline-more"]
+
+# Enable more inlining of functions at the cost of compile time (enabled by default).
+inline-more = []
+
+[[bench]]
+name = "memo_cache"
+harness = false
