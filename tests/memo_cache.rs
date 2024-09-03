@@ -70,7 +70,7 @@ mod tests_external {
 
         c.insert("hello".to_owned(), 42);
 
-        // Get using borrowed type.
+        // Get using borrowed type (i.e. `&str`).
         assert_eq!(c.get("hello"), Some(&42));
         assert_eq!(c.get_mut("hello"), Some(&mut 42));
     }
