@@ -1,6 +1,6 @@
-# MemoCache
-
 ![build status](https://github.com/krisvanrens/memo-cache-rs/actions/workflows/build-and-test.yml/badge.svg)
+
+# MemoCache
 
 A small, fixed-size cache with retention management, e.g. for use with memoization.
 
