@@ -63,12 +63,12 @@ The cache is fixed-size, so if it is full, the oldes key/value pair will be evic
 The use of a sequential data storage does have performance impact, especially for key lookup.
 That's why this cache will only be beneficial performance-wise when used with a relatively small size, up to about 128 elements.
 
-Run the included benchmarks using `criterion`: `cargo bench`
+Run the included benchmarks using [criterion](https://crates.io/crates/criterion) by invoking: `cargo bench`
 
 ## TODO
 
-- Extend documentation (on `[no_std`, example, etc.).
-- Add `get_or_else` method that can nicely deal with references to cached items instead of being forced to use the cache in an imperative fashion.
+- Extend documentation (e.g. on `[no_std]`, examples, etc.).
+- Add `get_or_insert_with` method (like [this](https://doc.rust-lang.org/std/option/enum.Option.html#method.get_or_insert_with)) that nicely deals with references to cached items instead of being forced to use the cache in an imperative fashion.
 - Improve benchmarks to be more useful and indicative.
 
 ## License
