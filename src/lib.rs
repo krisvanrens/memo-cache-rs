@@ -143,6 +143,30 @@ where
         }
     }
 
+    /// Returns `true` if the cache contains a value for the specified key.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use memo_cache::MemoCache;
+    ///
+    /// let mut c = MemoCache::<u32, &str, 4>::new();
+    ///
+    /// assert_eq!(c.contains_key(&42), false);
+    ///
+    /// c.insert(42, "The Answer");
+    ///
+    /// assert_eq!(c.contains_key(&42), true);
+    /// ```
+    #[cfg_attr(feature = "inline-more", inline)]
+    pub fn contains_key<Q>(&self, k: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: Eq + ?Sized,
+    {
+        self.buffer.iter().any(|e| e.is_key(k))
+    }
+
     /// Lookup a cache entry by key.
     ///
     /// # Examples

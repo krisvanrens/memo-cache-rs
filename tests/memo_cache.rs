@@ -22,6 +22,17 @@ mod tests_external {
     }
 
     #[test]
+    fn test_contains_key() {
+        let mut c = MemoCache::<&str, i32, 3>::new();
+
+        assert_eq!(c.contains_key("hello"), false);
+
+        c.insert("hello", 42);
+
+        assert_eq!(c.contains_key("hello"), true);
+    }
+
+    #[test]
     fn test_get() {
         let mut c = MemoCache::<&str, i32, 3>::new();
 
@@ -71,6 +82,7 @@ mod tests_external {
         c.insert("hello".to_owned(), 42);
 
         // Get using borrowed type (i.e. `&str`).
+        assert_eq!(c.contains_key("hello"), true);
         assert_eq!(c.get("hello"), Some(&42));
         assert_eq!(c.get_mut("hello"), Some(&mut 42));
     }
