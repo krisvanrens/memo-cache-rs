@@ -28,12 +28,37 @@ struct Process { /* ... */ }
 
 impl Process {
     fn calculate(&self, input: u64) -> f64 {
-        // ..do some expensive calculation..
+        // ..do expensive calculation on `input`..
     }
 }
 ```
 
-We can add memoization to this function as follows:
+Each single call to this function results in the resource costs of the calculation.
+We can add memoization to this function in two different ways:
+
+- Using `MemoCache::get_or_insert_with`,
+- Using `MemoCache::get` and `MemoCache::insert`.
+
+For each of the following examples: each call to `calculate` will first check if the input value is already in the cache.
+If so: use the cached value, otherwise update the cache with a new, calculated value.
+
+The cache is fixed-size, so if it is full, the oldest key/value pair will be evicted, and memory usage is constant.
+
+### Example B: `get_or_insert_with`
+
+```rs
+struct Process {
+    cache: MemoCache<u64, f64, 32>,
+}
+
+impl Process {
+    fn calculate(&mut self, input: u64) -> f64 {
+        *self.cache.get_or_insert_with(&input, |&i| /* ..do expensive calculation on `input`.. */)
+    }
+}
+```
+
+### Example B: `get` and `insert`
 
 ```rs
 struct Process {
@@ -45,7 +70,7 @@ impl Process {
         if let Some(result) = self.cache.get(&input) {
             *result // Use cached value.
         } else {
-            let result = /* ..do some expensive calculation.. */;
+            let result = /* ..do expensive calculation on `input`.. */;
             self.cache.insert(input, result);
             result
         }
@@ -53,14 +78,9 @@ impl Process {
 }
 ```
 
-Each call to `calculate` will first check if the input value is already in the cache.
-If so: use the cached value, otherwise update the cache with a new, calculated value.
-
-The cache is fixed-size, so if it is full, the oldes key/value pair will be evicted, and memory usage is constant.
-
 ## Performance notes
 
-The use of a sequential data storage does have performance impact, especially for key lookup.
+The use of a simple sequential data storage does have performance impact, especially for key lookup.
 That's why this cache will only be beneficial performance-wise when used with a relatively small size, up to about 128 elements.
 
 Run the included benchmarks using [criterion](https://crates.io/crates/criterion) by invoking: `cargo bench`
