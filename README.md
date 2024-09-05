@@ -53,7 +53,7 @@ struct Process {
 
 impl Process {
     fn calculate(&mut self, input: u64) -> f64 {
-        *self.cache.get_or_insert_with(&input, |&i| /* ..do expensive calculation on `input`.. */)
+        *self.cache.get_or_insert_with(&input, |&i| /* ..do calculation on `input`.. */)
     }
 }
 ```
@@ -70,7 +70,7 @@ impl Process {
         if let Some(result) = self.cache.get(&input) {
             *result // Use cached value.
         } else {
-            let result = /* ..do expensive calculation on `input`.. */;
+            let result = /* ..do calculation on `input`.. */;
             self.cache.insert(input, result);
             result
         }
