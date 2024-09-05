@@ -112,6 +112,21 @@ where
         SIZE
     }
 
+    /// Replace slot under cursor and shift cursor position. Returns a reference to the replaced slot value.
+    fn replace_and_shift(&mut self, k: K, v: V) -> &V {
+        let s = self
+            .buffer
+            .get_mut(self.cursor)
+            .expect("invalid cursor value");
+        *s = KeyValueSlot::Used((k, v));
+
+        // Move the cursor over the buffer elements sequentially, creating FIFO behavior.
+        self.cursor = (self.cursor + 1) % SIZE;
+
+        // SAFETY: The slot was filled with a key/value above.
+        unsafe { s.get_value().unwrap_unchecked() }
+    }
+
     /// Insert a key/value pair.
     ///
     /// # Examples
@@ -132,13 +147,7 @@ where
         match self.buffer.iter_mut().find(|e| e.is_key(&k)) {
             Some(s) => s.update_value(v),
             None => {
-                *self
-                    .buffer
-                    .get_mut(self.cursor)
-                    .expect("invalid cursor value") = KeyValueSlot::Used((k, v));
-
-                // Move the cursor over the buffer elements sequentially, creating FIFO behavior.
-                self.cursor = (self.cursor + 1) % SIZE;
+                self.replace_and_shift(k, v);
             }
         }
     }
@@ -221,6 +230,47 @@ where
             .iter_mut()
             .find(|e| e.is_key(k))
             .map(|e| e.get_value_mut().unwrap())
+    }
+
+    /// Get the index for a given key, if found.
+    #[cfg_attr(feature = "inline-more", inline)]
+    fn get_key_index<Q>(&self, k: &Q) -> Option<usize>
+    where
+        K: Borrow<Q>,
+        Q: Eq + ?Sized,
+    {
+        self.buffer.iter().position(|e| e.is_key(k))
+    }
+
+    /// Get a value, or, if it does not exist in the cache, insert it using the value computed by `f`.
+    /// Returns a reference to the found, or newly inserted value associated with the given key.
+    /// If a value is inserted, the key is cloned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use memo_cache::MemoCache;
+    ///
+    /// let mut c = MemoCache::<u32, &str, 4>::new();
+    ///
+    /// assert_eq!(c.get(&42), None);
+    ///
+    /// let v = c.get_or_insert_with(&42, |_| "The Answer");
+    ///
+    /// assert_eq!(v, &"The Answer");
+    /// assert_eq!(c.get(&42), Some(&"The Answer"));
+    /// ```
+    #[cfg_attr(feature = "inline-more", inline)]
+    pub fn get_or_insert_with<F>(&mut self, k: &K, f: F) -> &V
+    where
+        F: FnOnce(&K) -> V,
+    {
+        if let Some(i) = self.get_key_index(k) {
+            // SAFETY: The key index was retrieved from a found key.
+            unsafe { self.buffer[i].get_value().unwrap_unchecked() }
+        } else {
+            self.replace_and_shift(k.clone(), f(k))
+        }
     }
 
     /// Clear the cache.

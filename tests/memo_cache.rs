@@ -61,6 +61,44 @@ mod tests_external {
     }
 
     #[test]
+    fn test_get_or_insert_with() {
+        let mut c = MemoCache::<String, i32, 3>::new();
+
+        assert_eq!(c.contains_key("hello"), false);
+        assert_eq!(c.contains_key("hi"), false);
+
+        assert_eq!(
+            c.get_or_insert_with(&"hello".to_owned(), |s| {
+                assert_eq!(s, "hello");
+                42
+            }),
+            &42
+        );
+
+        assert_eq!(c.get("hello"), Some(&42));
+        assert_eq!(c.contains_key("hi"), false);
+
+        assert_eq!(
+            c.get_or_insert_with(&"hi".to_owned(), |s| {
+                assert_eq!(s, "hi");
+                17
+            }),
+            &17
+        );
+
+        assert_eq!(c.get("hello"), Some(&42));
+        assert_eq!(c.get("hi"), Some(&17));
+
+        assert_eq!(
+            c.get_or_insert_with(&"hello".to_owned(), |_| {
+                assert!(false);
+                13 // NOTE: Key already exists, this value is not used.
+            }),
+            &42
+        );
+    }
+
+    #[test]
     fn test_clear() {
         let mut c = MemoCache::<&str, i32, 3>::new();
 
