@@ -46,10 +46,10 @@ fn bench_memo_cache64_uniform(c: &mut Criterion) {
     c.bench_function("MemoCache (size: 64, uniform)", |b| {
         b.iter(|| {
             let input = rng.gen_range(-100..=100);
-            if cache.get(&input).is_none() {
+            cache.get_or_insert_with(&input, |_| {
                 fake_expensive_calculation();
-                cache.insert(input, 42);
-            }
+                42
+            });
         })
     });
 }
@@ -62,10 +62,10 @@ fn bench_memo_cache64_normal(c: &mut Criterion) {
     c.bench_function("MemoCache (size: 64, normal)", |b| {
         b.iter(|| {
             let input = normal.sample(&mut rng) as i32;
-            if cache.get(&input).is_none() {
+            cache.get_or_insert_with(&input, |_| {
                 fake_expensive_calculation();
-                cache.insert(input, 42);
-            }
+                42
+            });
         })
     });
 }

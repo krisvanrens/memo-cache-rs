@@ -3,7 +3,7 @@ use rand_distr::{Distribution, Normal};
 use std::{collections::HashMap, thread, time};
 
 fn some_expensive_calculation(_: i32) -> f32 {
-    thread::sleep(time::Duration::from_millis(50)); // ...zzzZZzz...
+    thread::sleep(time::Duration::from_millis(20)); // ...zzzZZzz...
     std::f32::consts::PI
 }
 
@@ -20,11 +20,13 @@ impl Process {
         }
     }
 
-    fn regular_method(&self, input: i32) -> f32 {
+    /// Regular method, taking the calculation penalty, always.
+    fn regular(&self, input: i32) -> f32 {
         some_expensive_calculation(input)
     }
 
-    fn memoized_method1(&mut self, input: i32) -> f32 {
+    /// Memoized method, using a `HashMap` cache (no retention management).
+    fn memoized1(&mut self, input: i32) -> f32 {
         if let Some(value) = self.cache1.get(&input) {
             *value
         } else {
@@ -34,7 +36,8 @@ impl Process {
         }
     }
 
-    fn memoized_method2(&mut self, input: i32) -> f32 {
+    /// Memoized method, using a `MemoCache` cache (using `get` and `insert`).
+    fn memoized2a(&mut self, input: i32) -> f32 {
         if let Some(value) = self.cache2.get(&input) {
             *value
         } else {
@@ -43,6 +46,13 @@ impl Process {
             result
         }
     }
+
+    /// Memoized method, using a `MemoCache` cache (using `get_or_insert_with`).
+    fn memoized2b(&mut self, input: i32) -> f32 {
+        *self
+            .cache2
+            .get_or_insert_with(&input, |&x| some_expensive_calculation(x))
+    }
 }
 
 fn main() {
@@ -50,7 +60,7 @@ fn main() {
     //
     //   1. a regular (non-memoized) method,
     //   2. a method memoized using a hash map,
-    //   3. a method memoized using a MemoCache cache.
+    //   3. a method memoized using a MemoCache cache (two notation variants).
     //
     // Each of the methods are fed a series of random input numbers from a
     // normal distribution for which they (fake) "calculate" a result value.
@@ -64,35 +74,40 @@ fn main() {
     let mut rng = rand::thread_rng();
     let normal = Normal::new(0.0, 30.0).unwrap();
 
+    // Use the same input data for all tests:
+    let inputs = (0..100)
+        .map(|_| normal.sample(&mut rng) as i32)
+        .collect::<Vec<_>>();
+
     let mut p = Process::new();
 
     println!("Running tests..");
 
     let now = time::Instant::now();
-    for _ in 0..100 {
-        p.regular_method(normal.sample(&mut rng) as i32);
-    }
+    inputs.iter().fold(0.0, |sum, &i| sum + p.regular(i));
 
     let d_regular = now.elapsed();
 
     let now = time::Instant::now();
-    for _ in 0..100 {
-        p.memoized_method1(normal.sample(&mut rng) as i32);
-    }
+    inputs.iter().fold(0.0, |sum, &i| sum + p.memoized1(i));
 
     let d_memoized1 = now.elapsed();
 
     let now = time::Instant::now();
-    for _ in 0..100 {
-        p.memoized_method2(normal.sample(&mut rng) as i32);
-    }
+    inputs.iter().fold(0.0, |sum, &i| sum + p.memoized2a(i));
 
-    let d_memoized2 = now.elapsed();
+    let d_memoized2a = now.elapsed();
+
+    let now = time::Instant::now();
+    inputs.iter().fold(0.0, |sum, &i| sum + p.memoized2b(i));
+
+    let d_memoized2b = now.elapsed();
 
     println!("Done. Timing results:");
-    println!("Regular:              {} ms", d_regular.as_millis());
-    println!("Memoized (hash):      {} ms", d_memoized1.as_millis());
-    println!("Memoized (MemoCache): {} ms", d_memoized2.as_millis());
+    println!("Regular:                {} ms", d_regular.as_millis());
+    println!("Memoized (hash):        {} ms", d_memoized1.as_millis());
+    println!("Memoized (MemoCache A): {} ms", d_memoized2a.as_millis());
+    println!("Memoized (MemoCache B): {} ms", d_memoized2b.as_millis());
 
     let get_size = |capacity| capacity * (std::mem::size_of::<u32>() + std::mem::size_of::<f32>());
 
