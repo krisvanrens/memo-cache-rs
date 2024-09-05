@@ -44,7 +44,7 @@ If so: use the cached value, otherwise update the cache with a new, calculated v
 
 The cache is fixed-size, so if it is full, the oldest key/value pair will be evicted, and memory usage is constant.
 
-### Example B: `get_or_insert_with`
+### Example A: `get_or_insert_with`
 
 ```rs
 struct Process {
