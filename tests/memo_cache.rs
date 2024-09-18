@@ -67,6 +67,7 @@ mod tests_external {
         assert_eq!(c.contains_key("hello"), false);
         assert_eq!(c.contains_key("hi"), false);
 
+        // Insert a new key.
         assert_eq!(
             c.get_or_insert_with(&"hello".to_owned(), |s| {
                 assert_eq!(s, "hello");
@@ -78,6 +79,7 @@ mod tests_external {
         assert_eq!(c.get("hello"), Some(&42));
         assert_eq!(c.contains_key("hi"), false);
 
+        // Insert another new key.
         assert_eq!(
             c.get_or_insert_with(&"hi".to_owned(), |s| {
                 assert_eq!(s, "hi");
@@ -89,6 +91,7 @@ mod tests_external {
         assert_eq!(c.get("hello"), Some(&42));
         assert_eq!(c.get("hi"), Some(&17));
 
+        // Get an existing key (function is not called).
         assert_eq!(
             c.get_or_insert_with(&"hello".to_owned(), |_| {
                 assert!(false);
@@ -96,6 +99,58 @@ mod tests_external {
             }),
             &42
         );
+    }
+
+    #[test]
+    fn test_get_or_try_insert_with() {
+        let mut c = MemoCache::<String, i32, 3>::new();
+
+        assert_eq!(c.contains_key("hello"), false);
+        assert_eq!(c.contains_key("hi"), false);
+
+        // Insert a new key.
+        assert_eq!(
+            c.get_or_try_insert_with(&"hello".to_owned(), |s| -> Result<_, ()> {
+                assert_eq!(s, "hello");
+                Ok(42)
+            }),
+            Ok(&42)
+        );
+
+        assert_eq!(c.get("hello"), Some(&42));
+        assert_eq!(c.contains_key("hi"), false);
+
+        // Insert another new key.
+        assert_eq!(
+            c.get_or_try_insert_with(&"hi".to_owned(), |s| -> Result<_, ()> {
+                assert_eq!(s, "hi");
+                Ok(17)
+            }),
+            Ok(&17)
+        );
+
+        assert_eq!(c.get("hello"), Some(&42));
+        assert_eq!(c.get("hi"), Some(&17));
+
+        // Get an existing key (function is not called).
+        assert_eq!(
+            c.get_or_try_insert_with(&"hello".to_owned(), |_| -> Result<_, ()> {
+                assert!(false);
+                Ok(13) // NOTE: Key already exists, this value is not used.
+            }),
+            Ok(&42)
+        );
+
+        // Failing insert attempt for a nonexistent key.
+        assert_eq!(
+            c.get_or_try_insert_with(&"G'day".to_owned(), |s| {
+                assert_eq!(s, "G'day");
+                Err("Whoops")
+            }),
+            Err("Whoops")
+        );
+
+        assert_eq!(c.get("G'day"), None);
     }
 
     #[test]
