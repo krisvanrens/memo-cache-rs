@@ -4,6 +4,8 @@
 
 A small, fixed-size cache with retention management, e.g. for use with memoization.
 
+This library does not use the standard library so it is compatible with `#[no_std]` crates.
+
 ## Introduction
 
 Sometimes it can be beneficial to speedup pure function calls by using [memoization](https://en.wikipedia.org/wiki/Memoization).
@@ -43,6 +45,8 @@ For each of the following examples: each call to `calculate` will first check if
 If so: use the cached value, otherwise update the cache with a new, calculated value.
 
 The cache is fixed-size, so if it is full, the oldest key/value pair will be evicted, and memory usage is constant.
+
+See the `examples/` directory for more example code.
 
 ### Example A: `get_or_insert_with`
 
@@ -89,9 +93,8 @@ Run the included benchmarks using [criterion](https://crates.io/crates/criterion
 
 ## TODO
 
-- Extend documentation (e.g. on `[no_std]`, examples, etc.).
 - Improve benchmarks to be more useful and indicative.
-- Investigate cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
+- Investigate potential cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
 
 ## License
 
