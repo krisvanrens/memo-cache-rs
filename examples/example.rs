@@ -7,6 +7,14 @@ fn some_expensive_calculation(_: i32) -> f32 {
     std::f32::consts::PI
 }
 
+fn calculation_wrapper(input: &i32) -> f32 {
+    some_expensive_calculation(*input)
+}
+
+fn calculation_wrapper_result(input: &i32) -> Result<f32, ()> {
+    Ok(some_expensive_calculation(*input))
+}
+
 struct Process {
     pub cache1: HashMap<i32, f32>,
     pub cache2: MemoCache<i32, f32, 32>,
@@ -49,9 +57,15 @@ impl Process {
 
     /// Memoized method, using a `MemoCache` cache (using `get_or_insert_with`).
     fn memoized2b(&mut self, input: i32) -> f32 {
+        *self.cache2.get_or_insert_with(&input, calculation_wrapper)
+    }
+
+    /// Memoized method, using a `MemoCache` cache (using `get_or_try_insert_with`).
+    fn memoized2c(&mut self, input: i32) -> f32 {
         *self
             .cache2
-            .get_or_insert_with(&input, |&x| some_expensive_calculation(x))
+            .get_or_try_insert_with(&input, calculation_wrapper_result)
+            .unwrap()
     }
 }
 
@@ -60,7 +74,7 @@ fn main() {
     //
     //   1. a regular (non-memoized) method,
     //   2. a method memoized using a hash map,
-    //   3. a method memoized using a MemoCache cache (two notation variants).
+    //   3. a method memoized using a MemoCache cache (three variants).
     //
     // Each of the methods are fed a series of random input numbers from a
     // normal distribution for which they (fake) "calculate" a result value.
@@ -98,16 +112,26 @@ fn main() {
 
     let d_memoized2a = now.elapsed();
 
+    p.cache2.clear(); // The next test uses the same cache.
+
     let now = time::Instant::now();
     inputs.iter().fold(0.0, |sum, &i| sum + p.memoized2b(i));
 
     let d_memoized2b = now.elapsed();
+
+    p.cache2.clear(); // The next test uses the same cache.
+
+    let now = time::Instant::now();
+    inputs.iter().fold(0.0, |sum, &i| sum + p.memoized2c(i));
+
+    let d_memoized2c = now.elapsed();
 
     println!("Done. Timing results:");
     println!("Regular:                {} ms", d_regular.as_millis());
     println!("Memoized (hash):        {} ms", d_memoized1.as_millis());
     println!("Memoized (MemoCache A): {} ms", d_memoized2a.as_millis());
     println!("Memoized (MemoCache B): {} ms", d_memoized2b.as_millis());
+    println!("Memoized (MemoCache C): {} ms", d_memoized2c.as_millis());
 
     let get_size = |capacity| capacity * (std::mem::size_of::<u32>() + std::mem::size_of::<f32>());
 
