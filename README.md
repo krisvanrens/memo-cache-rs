@@ -58,6 +58,8 @@ impl Process {
 }
 ```
 
+For fallible insert functions, there's `get_or_try_insert_with`.
+
 ### Example B: `get` and `insert`
 
 ```rs
