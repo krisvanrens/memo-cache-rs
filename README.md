@@ -88,8 +88,8 @@ Run the included benchmarks using [criterion](https://crates.io/crates/criterion
 ## TODO
 
 - Extend documentation (e.g. on `[no_std]`, examples, etc.).
-- Add `get_or_insert_with` method (like [this](https://doc.rust-lang.org/std/option/enum.Option.html#method.get_or_insert_with)) that nicely deals with references to cached items instead of being forced to use the cache in an imperative fashion.
 - Improve benchmarks to be more useful and indicative.
+- Investigate cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
 
 ## License
 
