@@ -273,6 +273,44 @@ where
         }
     }
 
+    /// Get a value, or, if it does not exist in the cache, insert it using the value computed by `f`.
+    /// Returns a result with a reference to the found, or newly inserted value associated with the given key.
+    /// If `f` fails, the error is returned.
+    /// If a value is inserted, the key is cloned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use memo_cache::MemoCache;
+    ///
+    /// let mut c = MemoCache::<u32, &str, 4>::new();
+    ///
+    /// assert_eq!(c.get(&42), None);
+    ///
+    /// let answer : Result<_, &str> = Ok("The Answer");
+    /// let v = c.get_or_try_insert_with(&42, |_| answer);
+    ///
+    /// assert_eq!(v, Ok(&"The Answer"));
+    /// assert_eq!(c.get(&42), Some(&"The Answer"));
+    ///
+    /// let v = c.get_or_try_insert_with(&17, |_| Err("Dunno"));
+    ///
+    /// assert_eq!(v, Err("Dunno"));
+    /// assert_eq!(c.get(&17), None);
+    /// ```
+    #[cfg_attr(feature = "inline-more", inline)]
+    pub fn get_or_try_insert_with<F, E>(&mut self, k: &K, f: F) -> Result<&V, E>
+    where
+        F: FnOnce(&K) -> Result<V, E>,
+    {
+        if let Some(i) = self.get_key_index(k) {
+            // SAFETY: The key index was retrieved from a found key.
+            Ok(unsafe { self.buffer[i].get_value().unwrap_unchecked() })
+        } else {
+            f(k).map(|v| self.replace_and_shift(k.clone(), v))
+        }
+    }
+
     /// Clear the cache.
     ///
     /// # Examples
