@@ -260,6 +260,12 @@ where
     /// assert_eq!(v, &"The Answer");
     /// assert_eq!(c.get(&42), Some(&"The Answer"));
     /// ```
+    ///
+    /// # Notes
+    ///
+    /// Because this crate is `no_std`, we have no access to `std::borrow::ToOwned`, which means we cannot create a
+    /// version of `get_or_insert_with` that can create an owned value from a borrowed key.
+    ///
     #[cfg_attr(feature = "inline-more", inline)]
     pub fn get_or_insert_with<F>(&mut self, k: &K, f: F) -> &V
     where
@@ -298,6 +304,12 @@ where
     /// assert_eq!(v, Err("Dunno"));
     /// assert_eq!(c.get(&17), None);
     /// ```
+    ///
+    /// # Notes
+    ///
+    /// Because this crate is `no_std`, we have no access to `std::borrow::ToOwned`, which means we cannot create a
+    /// version of `get_or_try_insert_with` that can create an owned value from a borrowed key.
+    ///
     #[cfg_attr(feature = "inline-more", inline)]
     pub fn get_or_try_insert_with<F, E>(&mut self, k: &K, f: F) -> Result<&V, E>
     where
