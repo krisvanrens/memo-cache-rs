@@ -96,6 +96,23 @@ Run the included benchmarks using [criterion](https://crates.io/crates/criterion
 - Improve benchmarks to be more useful and indicative.
 - Investigate potential cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
 
+## Improved cache management
+
+There are two cases for any insert-or-add case:
+
+1. Cache hit: update cache (a) and return hit,
+2. Cache miss: add element (b) and return element.
+
+What each of the cache management operations do:
+
+a. Move hit element to the front (`rotate slice`),
+b. Add element in the front (`rotate_right(1)` + `overwrite el[0]`).
+
+The end result is a cache where:
+
+- The front is the last hit, newest element and the first to be found,
+- The back is the oldest element, the first to be removed.
+
 ## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
