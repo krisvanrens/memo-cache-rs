@@ -113,6 +113,7 @@ where
     }
 
     /// Replace slot under cursor and shift cursor position. Returns a reference to the replaced slot value.
+    #[cfg_attr(feature = "inline-more", inline)]
     fn replace_and_shift(&mut self, k: K, v: V) -> &V {
         let s = self
             .buffer
