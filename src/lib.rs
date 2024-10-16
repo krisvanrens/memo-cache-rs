@@ -115,10 +115,9 @@ where
     /// Replace slot under cursor and shift cursor position. Returns a reference to the replaced slot value.
     #[cfg_attr(feature = "inline-more", inline)]
     fn replace_and_shift(&mut self, k: K, v: V) -> &V {
-        let s = self
-            .buffer
-            .get_mut(self.cursor)
-            .expect("invalid cursor value");
+        // SAFETY: The cursor value is assumed to be correct.
+        let s = unsafe { self.buffer.get_unchecked_mut(self.cursor) };
+
         *s = KeyValueSlot::Used((k, v));
 
         // Move the cursor over the buffer elements sequentially, creating FIFO behavior.
