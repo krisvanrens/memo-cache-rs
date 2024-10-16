@@ -15,7 +15,7 @@ Programming language standard libraries provide such containers, often implement
 These implementations are fine for performance, but do not actually cover all cases because of the lack of retention management
 
 Suppose your input data covers the whole space that can be represented by a 64-bit integer.
-There probably is some (generally non-uniform) distribution with which the input values arrive, but it's possible that over time *all* possible values pass by.
+There probably is some (generally non-uniform) distribution with which the input values arrive, but it's possible that over time _all_ possible values pass by.
 Any cache without retention management will then grow to potentially enormous dimensions in memory which is undesirable.
 
 The cache implemented in this library uses a FIFO-style sequential data storage with fixed size, pre-allocated memory.
@@ -89,29 +89,18 @@ impl Process {
 The use of a simple sequential data storage does have performance impact, especially for key lookup.
 That's why this cache will only be beneficial performance-wise when used with a relatively small size, up to about 128 elements.
 
+The performance is very much input data-dependent.
+If the cache capacity is greater than or equal to the input data set size, performance is optimal (and `MemoCache` outperforms a `HashTable`).
+However, if the input data set size is greater than the cache size, elements will be purged from the cache leading to cache misses and cache churn.
+In this scenario, the fixed size of the cache, and/or the retention management aspect of `MemoCache` must weigh against the loss in performance over a `HashTable`.
+Always analyze your input data and perform measurements to select the cache size / type you use.
+
 Run the included benchmarks using [criterion](https://crates.io/crates/criterion) by invoking: `cargo bench`
 
 ## TODO
 
-- Improve benchmarks to be more useful and indicative.
-- Investigate potential cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
-
-## Improved cache management
-
-There are two cases for any insert-or-add case:
-
-1. Cache hit: update cache (a) and return hit,
-2. Cache miss: add element (b) and return element.
-
-What each of the cache management operations do:
-
-a. Move hit element to the front (`rotate slice`),
-b. Add element in the front (`rotate_right(1)` + `overwrite el[0]`).
-
-The end result is a cache where:
-
-- The front is the last hit, newest element and the first to be found,
-- The back is the oldest element, the first to be removed.
+- Investigate potential advanced cache improvements (e.g. start [here](https://en.wikipedia.org/wiki/Cache_replacement_policies)).
+- Perhaps add cursor motion policies based on estimated input data probability distributions (e.g. in the current implementation an often-seen input value will still be overwritten by cursor movement).
 
 ## License
 
