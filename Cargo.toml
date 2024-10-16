@@ -14,6 +14,7 @@ license = "Apache-2.0 OR MIT"
 [dev-dependencies]
 criterion = "0.5.1"
 rand = "0.8.5"
+rand_chacha = "0.3.1"
 rand_distr = "0.4.3"
 
 [features]

@@ -270,6 +270,7 @@ version = "0.8.0"
 dependencies = [
  "criterion",
  "rand",
+ "rand_chacha",
  "rand_distr",
 ]
 
