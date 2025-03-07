@@ -1,5 +1,7 @@
 ![build status](https://github.com/krisvanrens/memo-cache-rs/actions/workflows/build-and-test.yml/badge.svg)
 
+> **NOTE**: THIS PROJECT WAS MIGRATED TO: https://codeberg.org/krisvanrens/memo-cache-rs
+
 # MemoCache
 
 A small, fixed-size cache with retention management, e.g. for use with memoization.
